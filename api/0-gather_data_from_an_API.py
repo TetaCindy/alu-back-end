@@ -1,52 +1,34 @@
-#!/usr/bin/env python3
-"""
-0-gather_data_from_an_API.py
-Usage: python3 0-gather_data_from_an_API.py <employee_id>
-Works even on Python 3.4 (no requests needed)
-"""
+#!/usr/bin/python3
+"""Fetches and displays an employee TODO list progress from a REST API"""
 
-import sys
 import json
+import sys
 import urllib.request
 
-API_BASE = "https://jsonplaceholder.typicode.com"
-
-def get_json(url):
-    with urllib.request.urlopen(url) as response:
-        data = response.read().decode("utf-8")
-        return json.loads(data)
-
-def main():
+if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Usage: {} <employee_id>".format(sys.argv[0]), file=sys.stderr)
         sys.exit(1)
 
-    try:
-        emp_id = int(sys.argv[1])
-    except ValueError:
-        print("Error: employee_id must be an integer.", file=sys.stderr)
-        sys.exit(1)
+    emp_id = int(sys.argv[1])
 
-    # Fetch user info
-    user_url = "{}/users/{}".format(API_BASE, emp_id)
-    user = get_json(user_url)
-    if not user or user == {}:
-        print("Error: User with id {} not found.".format(emp_id), file=sys.stderr)
-        sys.exit(1)
+    # Get user info
+    user_url = "https://jsonplaceholder.typicode.com/users/{}".format(emp_id)
+    with urllib.request.urlopen(user_url) as response:
+        user = json.loads(response.read().decode("utf-8"))
+    employee_name = user.get("name")
 
-    employee_name = user.get("name", "Unknown")
+    # Get todos
+    todos_url = "https://jsonplaceholder.typicode.com/todos?userId={}".format(emp_id)
+    with urllib.request.urlopen(todos_url) as response:
+        todos = json.loads(response.read().decode("utf-8"))
 
-    # Fetch todos
-    todos_url = "{}/todos?userId={}".format(API_BASE, emp_id)
-    todos = get_json(todos_url)
     total_tasks = len(todos)
-    completed_tasks = [t for t in todos if t.get("completed")]
+    done_tasks = [t for t in todos if t.get("completed") is True]
+    done_count = len(done_tasks)
 
-    print("Employee {} is done with tasks({}/{}):".format(
-        employee_name, len(completed_tasks), total_tasks))
-    for task in completed_tasks:
-        print("\t {}".format(task.get("title", "")))
-
-if __name__ == "__main__":
-    main()
+    # Output
+    print("Employee {} is done with tasks({}/{}):".format(employee_name, done_count, total_tasks))
+    for task in done_tasks:
+        print("\t {}".format(task.get("title")))
 
