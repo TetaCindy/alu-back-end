@@ -1,37 +1,43 @@
 #!/usr/bin/python3
-"""Exports an employee's TODO list data to CSV format"""
+"""
+Module that exports data in the CSV format for a given employee ID.
+"""
 
 import csv
-import json
+import requests
 import sys
-import urllib.request
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("Usage: {} <employee_id>".format(sys.argv[0]), file=sys.stderr)
-        sys.exit(1)
+        sys.exit("Usage: ./1-export_to_CSV.py <employee_id>")
 
-    emp_id = int(sys.argv[1])
+    employee_id = sys.argv[1]
 
-    # Get user info
-    user_url = "https://jsonplaceholder.typicode.com/users/{}".format(emp_id)
-    with urllib.request.urlopen(user_url) as response:
-        user = json.loads(response.read().decode("utf-8"))
-    username = user.get("username")
+    # Fetch user data
+    user_url = (
+        "https://jsonplaceholder.typicode.com/users/{}".format(employee_id)
+    )
+    response = requests.get(user_url)
+    user_data = response.json()
+    username = user_data.get("username")
 
-    # Get todos
-    todos_url = "https://jsonplaceholder.typicode.com/todos?userId={}".format(emp_id)
-    with urllib.request.urlopen(todos_url) as response:
-        todos = json.loads(response.read().decode("utf-8"))
+    # Fetch TODO list
+    todos_url = (
+        "https://jsonplaceholder.typicode.com/todos?userId={}".format(
+            employee_id
+        )
+    )
+    response = requests.get(todos_url)
+    todos_data = response.json()
 
-    # Write to CSV
-    filename = "{}.csv".format(emp_id)
-    with open(filename, "w", newline='', encoding="utf-8") as csvfile:
+    # Write data to CSV
+    filename = "{}.csv".format(employee_id)
+    with open(filename, mode="w", newline="") as csvfile:
         writer = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
-        for task in todos:
+        for task in todos_data:
             writer.writerow([
-                emp_id,
+                employee_id,
                 username,
                 task.get("completed"),
                 task.get("title")
