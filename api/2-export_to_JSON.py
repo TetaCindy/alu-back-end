@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-Exports data in JSON format for a given employee ID.
+Exports all tasks of an employee in JSON format.
 """
 
 import json
@@ -10,11 +10,10 @@ import sys
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
+        print("Usage: ./2-export_to_JSON.py <employee_id>")
         sys.exit(1)
 
     user_id = sys.argv[1]
-
-    # Fetch user and todos data
     user_url = "https://jsonplaceholder.typicode.com/users/{}".format(user_id)
     todos_url = "https://jsonplaceholder.typicode.com/users/{}/todos".format(
         user_id
@@ -28,17 +27,18 @@ if __name__ == "__main__":
 
     username = user_data.get("username")
 
-    # Prepare data in the required format
+    # Build list of task dictionaries in correct key order
     tasks = []
-    for task in todos_data:
-        tasks.append({
-            "task": task.get("title"),
-            "completed": task.get("completed"),
-            "username": username
-        })
+for todo in todos_data:
+    tasks.append({
+        "task": todo.get("title"),
+        "completed": todo.get("completed"),
+        "username": username
+    })
 
-    data = {user_id: tasks}
 
-    # Write data to JSON file
-    with open("{}.json".format(user_id), "w") as json_file:
-        json.dump(data, json_file)
+    data = {str(user_id): tasks}
+
+    # Write JSON file
+    with open("{}.json".format(user_id), "w") as f:
+        json.dump(data, f)
