@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-Module that exports data in the CSV format for a given employee ID.
+Module that exports an employee's TODO list data in CSV format.
 """
 
 import csv
@@ -31,9 +31,9 @@ if __name__ == "__main__":
     response = requests.get(todos_url)
     todos_data = response.json()
 
-    # Write data to CSV
+    # Write CSV file
     filename = "{}.csv".format(employee_id)
-    with open(filename, mode="w", newline="") as csvfile:
+    with open(filename, "w", newline="") as csvfile:
         writer = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
         for task in todos_data:
             writer.writerow([
